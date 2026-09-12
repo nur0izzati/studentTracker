@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -51,7 +51,7 @@
             color: #4A403A;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-
+        
         .dark body {
             background-color: #1E1B18;
             color: #ECE7E1;
@@ -170,7 +170,7 @@
                     <input type="file" id="import-file" onchange="importData(event)" class="hidden" accept=".json">
                 </label>
             </div>
-
+            
             <button onclick="confirmResetData()" class="w-full py-2 px-3 rounded-lg text-xs text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all flex items-center justify-center space-x-1">
                 <i class="fa-solid fa-trash-can"></i>
                 <span>Reset All Data</span>
@@ -180,7 +180,7 @@
 
     <!-- Main Content Panel -->
     <main class="flex-1 p-4 md:p-8 overflow-y-auto custom-scrollbar max-w-7xl mx-auto w-full">
-
+        
         <!-- Header Banner -->
         <header class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
             <div>
@@ -202,7 +202,7 @@
                     </div>
                     <div>
                         <p class="text-xs text-pastel-textMuted font-medium">Net Balance</p>
-                        <h3 id="dash-balance" class="text-xl font-bold text-pastel-text mt-0.5"RM0.00</h3>
+                        <h3 id="dash-balance" class="text-xl font-bold text-pastel-text mt-0.5">$0.00</h3>
                     </div>
                 </div>
 
@@ -212,7 +212,7 @@
                     </div>
                     <div>
                         <p class="text-xs text-pastel-textMuted font-medium">Total Spent</p>
-                        <h3 id="dash-expenses" class="text-xl font-bold text-pastel-text mt-0.5"RM0.00</h3>
+                        <h3 id="dash-expenses" class="text-xl font-bold text-pastel-text mt-0.5">$0.00</h3>
                     </div>
                 </div>
 
@@ -280,15 +280,15 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm">
                     <p class="text-xs text-pastel-textMuted font-medium">Total Income</p>
-                    <p id="money-total-income" class="text-2xl font-bold text-emerald-600 mt-1"RM0.00</p>
+                    <p id="money-total-income" class="text-2xl font-bold text-emerald-600 mt-1">$0.00</p>
                 </div>
                 <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm">
                     <p class="text-xs text-pastel-textMuted font-medium">Total Expenses</p>
-                    <p id="money-total-expenses" class="text-2xl font-bold text-rose-500 mt-1"RM0.00</p>
+                    <p id="money-total-expenses" class="text-2xl font-bold text-rose-500 mt-1">$0.00</p>
                 </div>
                 <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm">
                     <p class="text-xs text-pastel-textMuted font-medium">Remaining Funds</p>
-                    <p id="money-remaining-balance" class="text-2xl font-bold text-pastel-text mt-1"RM0.00</p>
+                    <p id="money-remaining-balance" class="text-2xl font-bold text-pastel-text mt-1">$0.00</p>
                 </div>
             </div>
 
@@ -501,7 +501,7 @@
         // State Initialization
         let activeTab = 'dashboard';
         let currentTransType = 'expense';
-
+        
         let state = {
             transactions: [],
             assignments: [],
@@ -536,7 +536,7 @@
             loadState();
             setupCurrentDate();
             switchTab('dashboard');
-
+            
             // Set default date picker values to today
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('trans-date').value = today;
@@ -576,7 +576,7 @@
         // Navigation Controller
         function switchTab(tab) {
             activeTab = tab;
-
+            
             // Update Active Buttons
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`nav-${tab}`).classList.add('active');
@@ -586,7 +586,7 @@
             document.getElementById('view-money').classList.add('hidden');
             document.getElementById('view-assignments').classList.add('hidden');
 
-            document.getElementById(`view-RM{tab}`).classList.remove('hidden');
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
 
             // Update Header Action Buttons Dynamic Content
             const actionContainer = document.getElementById('header-actions');
@@ -664,13 +664,13 @@
                         <div class="flex items-center space-x-3">
                             <div class="w-2 h-2 rounded-full ${item.priority === 'High' ? 'bg-rose-400' : item.priority === 'Medium' ? 'bg-amber-400' : 'bg-emerald-400'}"></div>
                             <div>
-                                <h4 class="font-semibold text-xs text-pastel-text"RM{escapeHtml(item.title)}</h4>
-                                <span class="text-[10px] text-pastel-textMuted"RM{escapeHtml(item.course)} • Due ${item.dueDate}</span>
+                                <h4 class="font-semibold text-xs text-pastel-text">${escapeHtml(item.title)}</h4>
+                                <span class="text-[10px] text-pastel-textMuted">${escapeHtml(item.course)} • Due ${item.dueDate}</span>
                             </div>
                         </div>
                         <span class="text-[10px] px-2 py-1 rounded-md font-medium ${
                             item.status === 'In Progress' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
-                        }"RM{item.status}</span>
+                        }">${item.status}</span>
                     </div>
                 `).join('');
             }
@@ -755,9 +755,9 @@
             } else {
                 listBody.innerHTML = filtered.map(t => `
                     <tr class="hover:bg-pastel-cream/50 transition-colors">
-                        <td class="py-3 px-2 font-medium text-pastel-text"RM{escapeHtml(t.desc)}</td>
-                        <td class="py-3 px-2"><span class="px-2 py-0.5 rounded-md bg-pastel-beige/80 text-[10px] text-pastel-text"RM{t.category}</span></td>
-                        <td class="py-3 px-2 text-pastel-textMuted"RM{t.date}</td>
+                        <td class="py-3 px-2 font-medium text-pastel-text">${escapeHtml(t.desc)}</td>
+                        <td class="py-3 px-2"><span class="px-2 py-0.5 rounded-md bg-pastel-beige/80 text-[10px] text-pastel-text">${t.category}</span></td>
+                        <td class="py-3 px-2 text-pastel-textMuted">${t.date}</td>
                         <td class="py-3 px-2 text-right font-semibold ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-500'}">
                             ${t.type === 'income' ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}
                         </td>
@@ -850,14 +850,14 @@
                             </span>
                         </div>
 
-                        <h4 class="font-bold text-sm text-pastel-text mb-1 leading-snug"RM{escapeHtml(a.title)}</h4>
-                        <p class="text-xs text-pastel-textMuted mb-4">Due: <span class="font-medium text-pastel-text"RM{a.dueDate}</span> ${a.grade ? `• Grade Weight: ${escapeHtml(a.grade)}` : ''}</p>
+                        <h4 class="font-bold text-sm text-pastel-text mb-1 leading-snug">${escapeHtml(a.title)}</h4>
+                        <p class="text-xs text-pastel-textMuted mb-4">Due: <span class="font-medium text-pastel-text">${a.dueDate}</span> ${a.grade ? `• Grade Weight: ${escapeHtml(a.grade)}` : ''}</p>
                     </div>
 
                     <div>
                         <div class="flex justify-between items-center text-xs mb-1.5">
                             <span class="text-pastel-textMuted text-[10px]">Progress</span>
-                            <span class="font-semibold text-pastel-accent"RM{a.progress}%</span>
+                            <span class="font-semibold text-pastel-accent">${a.progress}%</span>
                         </div>
                         <div class="w-full bg-pastel-beige rounded-full h-2 mb-4 overflow-hidden">
                             <div class="bg-pastel-accent h-2 rounded-full transition-all duration-300" style="width: ${a.progress}%"></div>
