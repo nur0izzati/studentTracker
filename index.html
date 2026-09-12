@@ -137,6 +137,12 @@
                     <span>Overview</span>
                 </button>
 
+                <!-- Add this button inside the <nav> element -->
+                <button onclick="openModal('modal-devtools')" id="nav-devtools" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-pastel-pink/50 text-pastel-text text-left">
+                    <i class="fa-solid fa-code text-pastel-accent w-5"></i>
+                    <span>Developer Settings</span>
+                </button>
+
                 <button onclick="switchTab('money')" id="nav-money" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-pastel-pink/50 text-pastel-text text-left">
                     <i class="fa-solid fa-wallet text-pastel-accent w-5"></i>
                     <span>Money Tracker</span>
@@ -273,6 +279,54 @@
                 </div>
             </div>
         </section>
+
+        <!-- MODAL: DEVELOPER SETTINGS -->
+        <div id="modal-devtools" class="fixed inset-0 bg-black/40 modal-blur z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-pastel-cardBg w-full max-w-2xl rounded-2xl border border-pastel-beige p-6 shadow-xl relative max-h-[90vh] flex flex-col">
+                <button onclick="closeModal('modal-devtools')" class="absolute top-4 right-4 text-pastel-textMuted hover:text-pastel-text">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+                <h3 class="font-serif text-xl font-bold text-pastel-text mb-4">🛠️ Developer Settings</h3>
+                
+                <div class="space-y-6 overflow-y-auto custom-scrollbar pr-2 text-xs flex-1">
+                    <!-- Quick Actions Section -->
+                    <div>
+                        <h4 class="font-bold text-pastel-text uppercase tracking-wider mb-2">Data Generation & State</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="devSeedMockData()" class="p-2.5 bg-pastel-sage/50 hover:bg-pastel-sage text-pastel-text font-semibold rounded-xl transition-all text-left flex items-center space-x-2">
+                                <i class="fa-solid fa-database text-emerald-700"></i>
+                                <span>Seed Dummy Data</span>
+                            </button>
+                            <button onclick="devClearAllData()" class="p-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 font-semibold rounded-xl transition-all text-left flex items-center space-x-2">
+                                <i class="fa-solid fa-eraser"></i>
+                                <span>Wipe All Storage</span>
+                            </button>
+                            <button onclick="devLogState()" class="p-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold rounded-xl transition-all text-left flex items-center space-x-2">
+                                <i class="fa-solid fa-terminal"></i>
+                                <span>Log State to Console</span>
+                            </button>
+                            <button onclick="devToggleDebugBorders()" class="p-2.5 bg-pastel-pink/50 hover:bg-pastel-pink text-pastel-text font-semibold rounded-xl transition-all text-left flex items-center space-x-2">
+                                <i class="fa-solid fa-border-all"></i>
+                                <span>Toggle Wireframe Mode</span>
+                            </button>
+                        </div>
+                    </div>
+        
+                    <!-- Direct State Editor -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h4 class="font-bold text-pastel-text uppercase tracking-wider">Live JSON Editor</h4>
+                            <span id="dev-json-status" class="text-[10px] text-pastel-textMuted italic">Editing localStorage directly</span>
+                        </div>
+                        <textarea id="dev-state-json" class="w-full h-48 font-mono text-[11px] p-3 rounded-xl bg-slate-900 text-green-400 border border-slate-700 focus:outline-none custom-scrollbar leading-relaxed"></textarea>
+                        <div class="flex justify-end space-x-2 mt-2">
+                            <button onclick="devLoadJSONToEditor()" class="px-3 py-1.5 bg-pastel-beige hover:bg-pastel-beige/80 text-pastel-text rounded-lg">Reload JSON</button>
+                            <button onclick="devSaveJSONFromEditor()" class="px-3 py-1.5 bg-pastel-accent hover:bg-pastel-accentHover text-white rounded-lg font-semibold">Apply & Save State</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- VIEW 2: MONEY TRACKER -->
         <section id="view-money" class="hidden space-y-6">
@@ -530,6 +584,78 @@
             ],
             darkMode: false
         };
+
+        // --- DEVELOPER SETTINGS UTILITIES ---
+        // 1. Open DevTools Modal & Load JSON
+        const originalOpenModal = openModal;
+        openModal = function(id) {
+            originalOpenModal(id);
+            if (id === 'modal-devtools') {
+                devLoadJSONToEditor();
+            }
+        };
+        
+        // 2. Load State into Editor
+        function devLoadJSONToEditor() {
+            const jsonField = document.getElementById('dev-state-json');
+            if (jsonField) {
+                jsonField.value = JSON.stringify(state, null, 2);
+            }
+        }
+        
+        // 3. Save State from Raw JSON Editor
+        function devSaveJSONFromEditor() {
+            const jsonField = document.getElementById('dev-state-json');
+            const statusText = document.getElementById('dev-json-status');
+            try {
+                const parsed = JSON.parse(jsonField.value);
+                state = parsed;
+                saveState();
+                statusText.innerText = "State saved successfully!";
+                statusText.className = "text-[10px] text-emerald-600 font-bold";
+                setTimeout(() => { statusText.innerText = "Editing localStorage directly"; statusText.className = "text-[10px] text-pastel-textMuted italic"; }, 2000);
+            } catch (e) {
+                alert("Invalid JSON format! Please fix syntax errors before applying.");
+            }
+        }
+        
+        // 4. Seed Extra Mock Data for Testing
+        function devSeedMockData() {
+            state.transactions.push(
+                { id: Date.now().toString() + '1', type: 'expense', desc: 'Dev Test Item A', amount: 19.99, date: new Date().toISOString().split('T')[0], category: 'Other' },
+                { id: Date.now().toString() + '2', type: 'income', desc: 'Dev Test Grant', amount: 300.00, date: new Date().toISOString().split('T')[0], category: 'Allowance' }
+            );
+            state.assignments.push(
+                { id: Date.now().toString() + '3', title: 'Automated Test Assignment', course: 'DEV101', dueDate: new Date().toISOString().split('T')[0], priority: 'High', status: 'In Progress', grade: '100%', progress: 50 }
+            );
+            saveState();
+            devLoadJSONToEditor();
+        }
+        
+        // 5. Complete Wipe
+        function devClearAllData() {
+            if (confirm("Are you sure you want to completely purge state?")) {
+                localStorage.removeItem('student_hub_state');
+                state = { transactions: [], assignments: [], darkMode: false };
+                saveState();
+                devLoadJSONToEditor();
+            }
+        }
+        
+        // 6. Log State to Browser Console
+        function devLogState() {
+            console.log("=== CURRENT HUB STATE ===", state);
+            alert("Application state printed to Browser Developer Console (F12).");
+        }
+        
+        // 7. Toggle CSS Debug Wireframe Mode
+        let debugBordersActive = false;
+        function devToggleDebugBorders() {
+            debugBordersActive = !debugBordersActive;
+            document.querySelectorAll('*').forEach(el => {
+                el.style.outline = debugBordersActive ? '1px solid rgba(255, 0, 0, 0.2)' : 'none';
+            });
+        }
 
         // Life-Cycle Event Hook
         window.onload = function() {
