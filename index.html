@@ -1,366 +1,1056 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student Life Hub - Assignments, Budget & gifBakery</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Productivity & Finance Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans for refined aesthetic typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
-
-  <style>
-    :root {
-      --bg: #faf7f5;
-      --card: #ffffff;
-      --accent: #e8a598;
-      --accent-hover: #d89386;
-      --text: #4a403a;
-      --border: #f0ece9;
-      --sage: #b3c8b9;
-    }
-
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 1.5rem;
-    }
-
-    .container {
-      max-width: 850px;
-      margin: 0 auto;
-    }
-
-    /* Navigation Tabs */
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 1.5rem;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 0.5rem;
-    }
-
-    .tab-btn {
-      background: none;
-      border: none;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #8c827a;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .tab-btn.active {
-      background: var(--accent);
-      color: white;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    /* Cards & Components */
-    .card {
-      background: var(--card);
-      padding: 1.5rem;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-      margin-bottom: 1.5rem;
-    }
-
-    .btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn:hover { background: var(--accent-hover); }
-    .btn:disabled { background: #ccc; cursor: not-allowed; }
-
-    input, select {
-      padding: 0.6rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-right: 0.5rem;
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-    }
-
-    /* Assignment Tracker Styles */
-    .assignment-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .badge {
-      font-size: 0.75rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 6px;
-      text-transform: uppercase;
-      font-weight: bold;
-    }
-    .badge.high { background: #fed7d7; color: #9b2c2c; }
-    .badge.medium { background: #feebc8; color: #9c4221; }
-    .badge.low { background: #c6f6d5; color: #22543d; }
-
-    /* gifBakery Upload Area */
-    .upload-area {
-      border: 2px dashed var(--accent);
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      background: #fffaf9;
-      cursor: pointer;
-      margin-bottom: 1rem;
-    }
-
-    .preview-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      gap: 10px;
-      margin-bottom: 1rem;
-    }
-
-    .preview-grid img {
-      width: 100%;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <h1 style="text-align: center;">🎓 Student Life Suite</h1>
-
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('assignments')">📚 Assignments</button>
-      <button class="tab-btn" onclick="switchTab('budget')">💸 Money Tracker</button>
-      <button class="tab-btn" onclick="switchTab('gifbakery')">🧁 gifBakery (GIF & PDF)</button>
-    </div>
-
-    <div id="assignments" class="tab-content active">
-      <div class="card">
-        <h2>Assignment Tracker</h2>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
-          <input type="text" id="taskTitle" placeholder="Assignment Title">
-          <input type="text" id="taskSubject" placeholder="Course / Subject">
-          <input type="date" id="taskDueDate">
-          <select id="taskPriority">
-            <option value="Low">Low Priority</option>
-            <option value="Medium">Medium Priority</option>
-            <option value="High">High Priority</option>
-          </select>
-          <button class="btn" onclick="addAssignment()">Add Task</button>
-        </div>
-        <div id="assignmentList"></div>
-      </div>
-    </div>
-
-    <div id="budget" class="tab-content">
-      <div class="card">
-        <h2>Money Tracker</h2>
-        <h3 style="color: #38a169;">Balance: <span id="balanceDisplay">RM 0.00</span></h3>
-        <div style="margin-bottom: 1rem;">
-          <input type="text" id="descInput" placeholder="Description (e.g. Books)">
-          <input type="number" id="amountInput" placeholder="Amount (RM)">
-          <select id="typeInput">
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-          </select>
-          <button class="btn" onclick="addTransaction()">Add Entry</button>
-        </div>
-        <ul id="transactionList" style="padding-left: 1.2rem;"></ul>
-      </div>
-    </div>
-
-    <div id="gifbakery" class="tab-content">
-      <div class="card">
-        <h2>🧁 gifBakery Generator</h2>
-        <p>Convert uploaded images into a PDF document or animated GIF automatically.</p>
-
-        <div class="upload-area" onclick="document.getElementById('imageInput').click()">
-          <span>📁 Click or drop images here</span>
-          <input type="file" id="imageInput" multiple accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
-        </div>
-
-        <div class="preview-grid" id="imagePreview"></div>
-
-        <div>
-          <button class="btn" id="pdfBtn" onclick="generatePDF()" disabled>Export to PDF</button>
-          <button class="btn" id="gifBtn" onclick="generateGIF()" disabled>Generate GIF</button>
-        </div>
-
-        <div id="outputResult" style="margin-top: 1.5rem;"></div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // TAB SWITCHING LOGIC
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      
-      document.getElementById(tabId).classList.add('active');
-      event.currentTarget.classList.add('active');
-    }
-
-    // ASSIGNMENT TRACKER LOGIC
-    let assignments = JSON.parse(localStorage.getItem('assignments')) || [];
-
-    function renderAssignments() {
-      const container = document.getElementById('assignmentList');
-      container.innerHTML = '';
-      assignments.forEach((item, index) => {
-        const div = document.createElement('div');
-        div.className = 'assignment-item';
-        div.innerHTML = `
-          <div>
-            <strong>${item.title}</strong> (${item.subject})<br>
-            <small>Due: ${item.dueDate || 'N/A'}</small>
-          </div>
-          <div>
-            <span class="badge ${item.priority.toLowerCase()}">${item.priority}</span>
-            <button onclick="deleteAssignment(${index})" style="background:none; border:none; color:red; cursor:pointer; margin-left:10px;">✕</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-      localStorage.setItem('assignments', JSON.stringify(assignments));
-    }
-
-    function addAssignment() {
-      const title = document.getElementById('taskTitle').value;
-      const subject = document.getElementById('taskSubject').value;
-      const dueDate = document.getElementById('taskDueDate').value;
-      const priority = document.getElementById('taskPriority').value;
-
-      if (!title) return;
-      assignments.push({ title, subject, dueDate, priority });
-      renderAssignments();
-      document.getElementById('taskTitle').value = '';
-      document.getElementById('taskSubject').value = '';
-    }
-
-    function deleteAssignment(index) {
-      assignments.splice(index, 1);
-      renderAssignments();
-    }
-
-    // MONEY TRACKER LOGIC
-    let balance = parseFloat(localStorage.getItem('balance')) || 0;
-
-    function updateBalanceDisplay() {
-      document.getElementById('balanceDisplay').textContent = `RM ${balance.toFixed(2)}`;
-      localStorage.setItem('balance', balance);
-    }
-
-    function addTransaction() {
-      const desc = document.getElementById('descInput').value;
-      const amount = parseFloat(document.getElementById('amountInput').value);
-      const type = document.getElementById('typeInput').value;
-
-      if (!desc || isNaN(amount)) return;
-
-      if (type === 'income') {
-        balance += amount;
-      } else {
-        balance -= amount;
-      }
-
-      updateBalanceDisplay();
-
-      const li = document.createElement('li');
-      li.textContent = `${desc}: ${type === 'income' ? '+' : '-'} RM ${amount.toFixed(2)}`;
-      document.getElementById('transactionList').appendChild(li);
-
-      document.getElementById('descInput').value = '';
-      document.getElementById('amountInput').value = '';
-    }
-
-    // GIF & PDF GENERATOR LOGIC
-    let uploadedImages = [];
-
-    function handleImageUpload(event) {
-      const files = Array.from(event.target.files);
-      if (!files.length) return;
-
-      uploadedImages = [];
-      const previewContainer = document.getElementById('imagePreview');
-      previewContainer.innerHTML = '';
-
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          uploadedImages.push(e.target.result);
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          previewContainer.appendChild(img);
-
-          document.getElementById('pdfBtn').disabled = false;
-          document.getElementById('gifBtn').disabled = false;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function generatePDF() {
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF();
-
-      uploadedImages.forEach((imgData, index) => {
-        if (index > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 15, 15, 180, 160);
-      });
-
-      pdf.save('document.pdf');
-    }
-
-    function generateGIF() {
-      const outputResult = document.getElementById('outputResult');
-      outputResult.innerHTML = '<p>Generating GIF... Please wait.</p>';
-
-      gifshot.createGIF({
-        images: uploadedImages,
-        interval: 0.5,
-        gifWidth: 250,
-        gifHeight: 250
-      }, function(obj) {
-        if (!obj.error) {
-          const animatedImage = obj.image;
-          outputResult.innerHTML = `
-            <img src="${animatedImage}" style="border-radius: 8px;" /><br><br>
-            <a href="${animatedImage}" download="animation.gif" class="btn">Download GIF</a>
-          `;
-        } else {
-          outputResult.innerHTML = '<p>Error creating GIF.</p>';
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            pink: '#F9ECEC',
+                            pinkDark: '#E8C5C5',
+                            sage: '#E5EBE3',
+                            sageDark: '#A3B899',
+                            cream: '#FAF7F2',
+                            beige: '#F2EBE1',
+                            accent: '#D8929A',
+                            accentHover: '#C67B84',
+                            text: '#4A403A',
+                            textMuted: '#8C7A70',
+                            cardBg: '#FFFFFF',
+                            inputBg: '#FAF8F5'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
         }
-      });
-    }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FAF7F2;
+            color: #4A403A;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
 
-    // Initial Load
-    renderAssignments();
-    updateBalanceDisplay();
-  </script>
+        .dark body {
+            background-color: #1E1B18;
+            color: #ECE7E1;
+        }
+
+        .dark .bg-pastel-cardBg {
+            background-color: #2A2622 !important;
+            color: #ECE7E1;
+        }
+
+        .dark .bg-pastel-cream {
+            background-color: #1E1B18 !important;
+        }
+
+        .dark .bg-pastel-beige {
+            background-color: #26221E !important;
+        }
+
+        .dark .bg-pastel-inputBg {
+            background-color: #332E29 !important;
+            color: #ECE7E1;
+            border-color: #443E38;
+        }
+
+        .dark .text-pastel-text {
+            color: #ECE7E1 !important;
+        }
+
+        .dark .text-pastel-textMuted {
+            color: #B0A299 !important;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #E8C5C5;
+            border-radius: 9999px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #443E38;
+        }
+
+        .tab-btn.active {
+            background-color: #F9ECEC;
+            color: #D8929A;
+            font-weight: 600;
+        }
+        .dark .tab-btn.active {
+            background-color: #382D2E;
+            color: #E8C5C5;
+        }
+
+        .modal-blur {
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row antialiased selection:bg-pastel-pinkDark selection:text-white">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 bg-pastel-cardBg border-b md:border-b-0 md:border-r border-pastel-beige/80 p-5 flex flex-col justify-between shrink-0 shadow-sm z-10">
+        <div>
+            <!-- Branding Header -->
+            <div class="flex items-center space-x-3 mb-8">
+                <div class="w-10 h-10 rounded-2xl bg-pastel-pink flex items-center justify-center text-pastel-accent text-lg shadow-sm">
+                    <i class="fa-solid font-bold fa-ribbon"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif font-bold text-xl text-pastel-text leading-tight">Student Hub</h1>
+                    <p class="text-xs text-pastel-textMuted">Planner & Tracker</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="space-y-1.5">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn active w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-pastel-pink/50 text-pastel-text text-left">
+                    <i class="fa-solid fa-grid-2 text-pastel-accent w-5"></i>
+                    <span>Overview</span>
+                </button>
+
+                <button onclick="switchTab('money')" id="nav-money" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-pastel-pink/50 text-pastel-text text-left">
+                    <i class="fa-solid fa-wallet text-pastel-accent w-5"></i>
+                    <span>Money Tracker</span>
+                </button>
+
+                <button onclick="switchTab('assignments')" id="nav-assignments" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-pastel-pink/50 text-pastel-text text-left">
+                    <i class="fa-solid fa-book-bookmark text-pastel-accent w-5"></i>
+                    <span>Assignments</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Footer Control Buttons & Theme Switch -->
+        <div class="mt-8 pt-6 border-t border-pastel-beige/80 space-y-3">
+            <button onclick="toggleDarkMode()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-medium bg-pastel-beige/50 hover:bg-pastel-beige text-pastel-text transition-all">
+                <span class="flex items-center space-x-2">
+                    <i class="fa-solid fa-moon text-pastel-accent"></i>
+                    <span>Dark Mode</span>
+                </span>
+                <div id="theme-toggle-dot" class="w-4 h-4 rounded-full bg-pastel-accent transform transition-transform"></div>
+            </button>
+
+            <div class="flex items-center justify-between space-x-2">
+                <button onclick="exportData()" title="Backup Data" class="flex-1 py-2 px-3 rounded-lg text-xs bg-pastel-sage/50 text-pastel-text hover:bg-pastel-sage transition-all flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Export</span>
+                </button>
+                <label title="Import Data" class="flex-1 py-2 px-3 rounded-lg text-xs bg-pastel-sage/50 text-pastel-text hover:bg-pastel-sage transition-all flex items-center justify-center space-x-1 cursor-pointer">
+                    <i class="fa-solid fa-upload"></i>
+                    <span>Import</span>
+                    <input type="file" id="import-file" onchange="importData(event)" class="hidden" accept=".json">
+                </label>
+            </div>
+
+            <button onclick="confirmResetData()" class="w-full py-2 px-3 rounded-lg text-xs text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all flex items-center justify-center space-x-1">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Reset All Data</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto custom-scrollbar max-w-7xl mx-auto w-full">
+
+        <!-- Header Banner -->
+        <header class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+            <div>
+                <span id="current-date" class="text-xs font-semibold tracking-wider uppercase text-pastel-accent"></span>
+                <h2 id="page-title" class="font-serif text-3xl font-bold text-pastel-text mt-1">Welcome Back ✨</h2>
+            </div>
+            <div id="header-actions" class="flex items-center space-x-3">
+                <!-- Dynamic main action button based on current tab -->
+            </div>
+        </header>
+
+        <!-- VIEW 1: DASHBOARD OVERVIEW -->
+        <section id="view-dashboard" class="space-y-6">
+            <!-- Summary Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-pastel-sage/60 text-emerald-700 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-pastel-textMuted font-medium">Net Balance</p>
+                        <h3 id="dash-balance" class="text-xl font-bold text-pastel-text mt-0.5"RM0.00</h3>
+                    </div>
+                </div>
+
+                <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-pastel-pink/80 text-pastel-accent flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-pastel-textMuted font-medium">Total Spent</p>
+                        <h3 id="dash-expenses" class="text-xl font-bold text-pastel-text mt-0.5"RM0.00</h3>
+                    </div>
+                </div>
+
+                <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-pastel-textMuted font-medium">Pending Tasks</p>
+                        <h3 id="dash-pending-tasks" class="text-xl font-bold text-pastel-text mt-0.5">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-pastel-textMuted font-medium">Completion Rate</p>
+                        <h3 id="dash-completion-rate" class="text-xl font-bold text-pastel-text mt-0.5">0%</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overview Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Financial Overview Chart -->
+                <div class="bg-pastel-cardBg p-6 rounded-2xl border border-pastel-beige/80 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-serif text-lg font-bold text-pastel-text">Budget Summary</h3>
+                        <span class="text-xs text-pastel-textMuted">Income vs Expenses</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="dashBudgetChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Assignment Overview Chart -->
+                <div class="bg-pastel-cardBg p-6 rounded-2xl border border-pastel-beige/80 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-serif text-lg font-bold text-pastel-text">Assignment Status</h3>
+                        <span class="text-xs text-pastel-textMuted">Distribution</span>
+                    </div>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="dashAssignmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Due Assignments Widget -->
+            <div class="bg-pastel-cardBg p-6 rounded-2xl border border-pastel-beige/80 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-serif text-lg font-bold text-pastel-text">Priority Tasks & Deadlines</h3>
+                    <button onclick="switchTab('assignments')" class="text-xs text-pastel-accent font-semibold hover:underline">View All →</button>
+                </div>
+                <div id="dash-upcoming-list" class="space-y-3">
+                    <!-- Dynamic rendering -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: MONEY TRACKER -->
+        <section id="view-money" class="hidden space-y-6">
+            <!-- Financial Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm">
+                    <p class="text-xs text-pastel-textMuted font-medium">Total Income</p>
+                    <p id="money-total-income" class="text-2xl font-bold text-emerald-600 mt-1"RM0.00</p>
+                </div>
+                <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm">
+                    <p class="text-xs text-pastel-textMuted font-medium">Total Expenses</p>
+                    <p id="money-total-expenses" class="text-2xl font-bold text-rose-500 mt-1"RM0.00</p>
+                </div>
+                <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm">
+                    <p class="text-xs text-pastel-textMuted font-medium">Remaining Funds</p>
+                    <p id="money-remaining-balance" class="text-2xl font-bold text-pastel-text mt-1"RM0.00</p>
+                </div>
+            </div>
+
+            <!-- Visual Charts for Expenses -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1 bg-pastel-cardBg p-6 rounded-2xl border border-pastel-beige/80 shadow-sm flex flex-col justify-between">
+                    <h3 class="font-serif text-lg font-bold text-pastel-text mb-4">Expense Categories</h3>
+                    <div class="h-60 relative flex items-center justify-center">
+                        <canvas id="expenseCategoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Transaction List & Filter -->
+                <div class="lg:col-span-2 bg-pastel-cardBg p-6 rounded-2xl border border-pastel-beige/80 shadow-sm flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <h3 class="font-serif text-lg font-bold text-pastel-text">Transaction History</h3>
+                        <div class="flex items-center space-x-2">
+                            <select id="money-type-filter" onchange="renderTransactions()" class="px-3 py-1.5 rounded-lg border border-pastel-beige text-xs bg-pastel-inputBg text-pastel-text focus:outline-none">
+                                <option value="all">All Types</option>
+                                <option value="income">Income Only</option>
+                                <option value="expense">Expense Only</option>
+                            </select>
+                            <select id="money-category-filter" onchange="renderTransactions()" class="px-3 py-1.5 rounded-lg border border-pastel-beige text-xs bg-pastel-inputBg text-pastel-text focus:outline-none">
+                                <option value="all">All Categories</option>
+                                <option value="Allowance">Allowance</option>
+                                <option value="Job/Work">Job/Work</option>
+                                <option value="Food/Drinks">Food & Drinks</option>
+                                <option value="Textbooks/Supplies">Textbooks & Supplies</option>
+                                <option value="Rent/Utilities">Rent & Utilities</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar flex-1">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-pastel-beige text-pastel-textMuted uppercase font-semibold tracking-wider">
+                                    <th class="py-3 px-2">Description</th>
+                                    <th class="py-3 px-2">Category</th>
+                                    <th class="py-3 px-2">Date</th>
+                                    <th class="py-3 px-2 text-right">Amount</th>
+                                    <th class="py-3 px-2 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-list-body" class="divide-y divide-pastel-beige/50">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: ASSIGNMENT TRACKER -->
+        <section id="view-assignments" class="hidden space-y-6">
+            <!-- Assignment Controls & Filter -->
+            <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <!-- Search Box -->
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-pastel-textMuted text-xs"></i>
+                    <input type="text" id="assignment-search" oninput="renderAssignments()" placeholder="Search assignment or subject..." class="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-pastel-inputBg border border-pastel-beige/80 text-pastel-text focus:outline-none focus:ring-2 focus:ring-pastel-pinkDark">
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="assignment-status-filter" onchange="renderAssignments()" class="px-3 py-2 rounded-xl text-xs bg-pastel-inputBg border border-pastel-beige/80 text-pastel-text focus:outline-none">
+                        <option value="all">All Statuses</option>
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+
+                    <select id="assignment-priority-filter" onchange="renderAssignments()" class="px-3 py-2 rounded-xl text-xs bg-pastel-inputBg border border-pastel-beige/80 text-pastel-text focus:outline-none">
+                        <option value="all">All Priorities</option>
+                        <option value="High">High Priority</option>
+                        <option value="Medium">Medium Priority</option>
+                        <option value="Low">Low Priority</option>
+                    </select>
+
+                    <select id="assignment-sort" onchange="renderAssignments()" class="px-3 py-2 rounded-xl text-xs bg-pastel-inputBg border border-pastel-beige/80 text-pastel-text focus:outline-none">
+                        <option value="dueDate">Sort by Due Date</option>
+                        <option value="priority">Sort by Priority</option>
+                        <option value="course">Sort by Course</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Assignments Main List -->
+            <div id="assignment-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamic Assignment Cards -->
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL: ADD TRANSACTION -->
+    <div id="modal-transaction" class="fixed inset-0 bg-black/40 modal-blur z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-pastel-cardBg w-full max-w-md rounded-2xl border border-pastel-beige p-6 shadow-xl relative animate-fade-in">
+            <button onclick="closeModal('modal-transaction')" class="absolute top-4 right-4 text-pastel-textMuted hover:text-pastel-text">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="font-serif text-xl font-bold text-pastel-text mb-4">Add Transaction</h3>
+
+            <form id="form-transaction" onsubmit="handleTransactionSubmit(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block mb-1 text-pastel-text font-medium">Type</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="btn-type-expense" onclick="setTransactionType('expense')" class="py-2 rounded-xl font-semibold border transition-all bg-pastel-pink text-pastel-accent border-pastel-pinkDark">Expense</button>
+                        <button type="button" id="btn-type-income" onclick="setTransactionType('income')" class="py-2 rounded-xl font-semibold border transition-all bg-pastel-inputBg text-pastel-textMuted border-pastel-beige">Income</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block mb-1 text-pastel-text font-medium">Description</label>
+                    <input type="text" id="trans-desc" required placeholder="e.g. Textbooks, Coffee, Part-time Pay" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block mb-1 text-pastel-text font-medium">Amount ($)</label>
+                        <input type="number" step="0.01" min="0.01" id="trans-amount" required placeholder="0.00" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-pastel-text font-medium">Date</label>
+                        <input type="date" id="trans-date" required class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block mb-1 text-pastel-text font-medium">Category</label>
+                    <select id="trans-category" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                        <option value="Food/Drinks">Food & Drinks</option>
+                        <option value="Textbooks/Supplies">Textbooks & Supplies</option>
+                        <option value="Rent/Utilities">Rent & Utilities</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Allowance">Allowance</option>
+                        <option value="Job/Work">Job/Work</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-pastel-accent hover:bg-pastel-accentHover text-white font-semibold rounded-xl transition-all shadow-sm">Save Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT ASSIGNMENT -->
+    <div id="modal-assignment" class="fixed inset-0 bg-black/40 modal-blur z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-pastel-cardBg w-full max-w-md rounded-2xl border border-pastel-beige p-6 shadow-xl relative">
+            <button onclick="closeModal('modal-assignment')" class="absolute top-4 right-4 text-pastel-textMuted hover:text-pastel-text">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 id="assignment-modal-title" class="font-serif text-xl font-bold text-pastel-text mb-4">Add Assignment</h3>
+
+            <form id="form-assignment" onsubmit="handleAssignmentSubmit(event)" class="space-y-4 text-xs">
+                <input type="hidden" id="assign-id">
+                <div>
+                    <label class="block mb-1 text-pastel-text font-medium">Assignment Title</label>
+                    <input type="text" id="assign-title" required placeholder="e.g. Research Paper, Lab Report 2" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block mb-1 text-pastel-text font-medium">Course / Subject</label>
+                        <input type="text" id="assign-course" required placeholder="e.g. CS101, History" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-pastel-text font-medium">Due Date</label>
+                        <input type="date" id="assign-date" required class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block mb-1 text-pastel-text font-medium">Priority</label>
+                        <select id="assign-priority" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-pastel-text font-medium">Status</label>
+                        <select id="assign-status" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block mb-1 text-pastel-text font-medium">Weight / Grade Points</label>
+                        <input type="text" id="assign-grade" placeholder="e.g. 15% or 100 pts" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-pastel-text font-medium">Progress (%)</label>
+                        <input type="number" id="assign-progress" min="0" max="100" value="0" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-pastel-accent hover:bg-pastel-accentHover text-white font-semibold rounded-xl transition-all shadow-sm">Save Assignment</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // State Initialization
+        let activeTab = 'dashboard';
+        let currentTransType = 'expense';
+
+        let state = {
+            transactions: [],
+            assignments: [],
+            darkMode: false
+        };
+
+        // Chart Instance Handles
+        let dashBudgetChartInstance = null;
+        let dashAssignmentChartInstance = null;
+        let expenseCategoryChartInstance = null;
+
+        // Sample Pre-populated Data
+        const defaultSampleData = {
+            transactions: [
+                { id: '1', type: 'income', desc: 'Monthly Allowance', amount: 500.00, date: '2026-09-01', category: 'Allowance' },
+                { id: '2', type: 'expense', desc: 'Textbooks & Notebooks', amount: 85.50, date: '2026-09-03', category: 'Textbooks/Supplies' },
+                { id: '3', type: 'expense', desc: 'Iced Coffee & Snacks', amount: 12.25, date: '2026-09-05', category: 'Food/Drinks' },
+                { id: '4', type: 'income', desc: 'Campus Tutoring Pay', amount: 150.00, date: '2026-09-08', category: 'Job/Work' },
+                { id: '5', type: 'expense', desc: 'Weekly Grocery Run', amount: 45.00, date: '2026-09-10', category: 'Food/Drinks' }
+            ],
+            assignments: [
+                { id: '101', title: 'Calculus Problem Set 3', course: 'MATH201', dueDate: '2026-09-15', priority: 'High', status: 'In Progress', grade: '10%', progress: 60 },
+                { id: '102', title: 'Biology Lab Report: Enzymes', course: 'BIO110', dueDate: '2026-09-18', priority: 'Medium', status: 'Not Started', grade: '15%', progress: 0 },
+                { id: '103', title: 'Psychology Essay Draft', course: 'PSY101', dueDate: '2026-09-22', priority: 'Low', status: 'In Progress', grade: '20%', progress: 30 },
+                { id: '104', title: 'Intro CS Programming Project', course: 'CS105', dueDate: '2026-09-10', priority: 'High', status: 'Completed', grade: '25%', progress: 100 }
+            ],
+            darkMode: false
+        };
+
+        // Life-Cycle Event Hook
+        window.onload = function() {
+            loadState();
+            setupCurrentDate();
+            switchTab('dashboard');
+
+            // Set default date picker values to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('trans-date').value = today;
+            document.getElementById('assign-date').value = today;
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem('student_hub_state');
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                } catch(e) {
+                    state = defaultSampleData;
+                }
+            } else {
+                state = defaultSampleData;
+                saveState();
+            }
+
+            if (state.darkMode) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('student_hub_state', JSON.stringify(state));
+            refreshUI();
+        }
+
+        function setupCurrentDate() {
+            const options = { weekday: 'long', month: 'short', day: 'numeric' };
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', options);
+        }
+
+        // Navigation Controller
+        function switchTab(tab) {
+            activeTab = tab;
+
+            // Update Active Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`nav-${tab}`).classList.add('active');
+
+            // Hide/Show Views
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-money').classList.add('hidden');
+            document.getElementById('view-assignments').classList.add('hidden');
+
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+
+            // Update Header Action Buttons Dynamic Content
+            const actionContainer = document.getElementById('header-actions');
+            const pageTitle = document.getElementById('page-title');
+
+            if (tab === 'dashboard') {
+                pageTitle.innerText = "Dashboard Overview ✨";
+                actionContainer.innerHTML = `
+                    <button onclick="openModal('modal-transaction')" class="px-3.5 py-2 rounded-xl bg-pastel-sage hover:bg-pastel-sageDark hover:text-white text-pastel-text font-semibold text-xs transition-all flex items-center space-x-1 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> <span>Add Money</span>
+                    </button>
+                    <button onclick="openModal('modal-assignment')" class="px-3.5 py-2 rounded-xl bg-pastel-accent hover:bg-pastel-accentHover text-white font-semibold text-xs transition-all flex items-center space-x-1 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> <span>Add Task</span>
+                    </button>
+                `;
+            } else if (tab === 'money') {
+                pageTitle.innerText = "Money Tracker 💰";
+                actionContainer.innerHTML = `
+                    <button onclick="openModal('modal-transaction')" class="px-4 py-2 rounded-xl bg-pastel-accent hover:bg-pastel-accentHover text-white font-semibold text-xs transition-all flex items-center space-x-1 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> <span>New Transaction</span>
+                    </button>
+                `;
+            } else if (tab === 'assignments') {
+                pageTitle.innerText = "Assignment Tracker 📚";
+                actionContainer.innerHTML = `
+                    <button onclick="openModal('modal-assignment')" class="px-4 py-2 rounded-xl bg-pastel-accent hover:bg-pastel-accentHover text-white font-semibold text-xs transition-all flex items-center space-x-1 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> <span>New Assignment</span>
+                    </button>
+                `;
+            }
+
+            refreshUI();
+        }
+
+        function refreshUI() {
+            if (activeTab === 'dashboard') {
+                renderDashboard();
+            } else if (activeTab === 'money') {
+                renderMoneyTracker();
+            } else if (activeTab === 'assignments') {
+                renderAssignments();
+            }
+        }
+
+        function renderDashboard() {
+            // Money calculations
+            const totalIncome = state.transactions.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
+            const totalExpense = state.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0);
+            const balance = totalIncome - totalExpense;
+
+            document.getElementById('dash-balance').innerText = `$${balance.toFixed(2)}`;
+            document.getElementById('dash-expenses').innerText = `$${totalExpense.toFixed(2)}`;
+
+            // Assignment calculations
+            const pending = state.assignments.filter(a => a.status !== 'Completed').length;
+            const completed = state.assignments.filter(a => a.status === 'Completed').length;
+            const totalAssignments = state.assignments.length;
+            const rate = totalAssignments > 0 ? Math.round((completed / totalAssignments) * 100) : 0;
+
+            document.getElementById('dash-pending-tasks').innerText = pending;
+            document.getElementById('dash-completion-rate').innerText = `${rate}%`;
+
+            // Upcoming / Priority Tasks list rendering
+            const upcomingContainer = document.getElementById('dash-upcoming-list');
+            const pendingList = state.assignments
+                .filter(a => a.status !== 'Completed')
+                .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+                .slice(0, 4);
+
+            if (pendingList.length === 0) {
+                upcomingContainer.innerHTML = `<p class="text-xs text-pastel-textMuted italic">No pending assignments! Good job 🎉</p>`;
+            } else {
+                upcomingContainer.innerHTML = pendingList.map(item => `
+                    <div class="p-3 bg-pastel-cream rounded-xl border border-pastel-beige flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 rounded-full ${item.priority === 'High' ? 'bg-rose-400' : item.priority === 'Medium' ? 'bg-amber-400' : 'bg-emerald-400'}"></div>
+                            <div>
+                                <h4 class="font-semibold text-xs text-pastel-text"RM{escapeHtml(item.title)}</h4>
+                                <span class="text-[10px] text-pastel-textMuted"RM{escapeHtml(item.course)} • Due ${item.dueDate}</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] px-2 py-1 rounded-md font-medium ${
+                            item.status === 'In Progress' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+                        }"RM{item.status}</span>
+                    </div>
+                `).join('');
+            }
+
+            renderDashboardCharts(totalIncome, totalExpense);
+        }
+
+        function renderDashboardCharts(income, expense) {
+            // Budget Bar Chart
+            const ctxBudget = document.getElementById('dashBudgetChart').getContext('2d');
+            if (dashBudgetChartInstance) dashBudgetChartInstance.destroy();
+
+            dashBudgetChartInstance = new Chart(ctxBudget, {
+                type: 'bar',
+                data: {
+                    labels: ['Income', 'Expenses'],
+                    datasets: [{
+                        data: [income, expense],
+                        backgroundColor: ['#A3B899', '#D8929A'],
+                        borderRadius: 12,
+                        barThickness: 40
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Assignment Status Donut Chart
+            const ctxAssign = document.getElementById('dashAssignmentChart').getContext('2d');
+            if (dashAssignmentChartInstance) dashAssignmentChartInstance.destroy();
+
+            const statusCounts = {
+                'Not Started': state.assignments.filter(a => a.status === 'Not Started').length,
+                'In Progress': state.assignments.filter(a => a.status === 'In Progress').length,
+                'Completed': state.assignments.filter(a => a.status === 'Completed').length
+            };
+
+            dashAssignmentChartInstance = new Chart(ctxAssign, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Not Started', 'In Progress', 'Completed'],
+                    datasets: [{
+                        data: [statusCounts['Not Started'], statusCounts['In Progress'], statusCounts['Completed']],
+                        backgroundColor: ['#E8C5C5', '#F3D2A2', '#A3B899'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function renderMoneyTracker() {
+            const typeFilter = document.getElementById('money-type-filter').value;
+            const catFilter = document.getElementById('money-category-filter').value;
+
+            const totalIncome = state.transactions.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
+            const totalExpense = state.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0);
+
+            document.getElementById('money-total-income').innerText = `$${totalIncome.toFixed(2)}`;
+            document.getElementById('money-total-expenses').innerText = `$${totalExpense.toFixed(2)}`;
+            document.getElementById('money-remaining-balance').innerText = `$${(totalIncome - totalExpense).toFixed(2)}`;
+
+            // Filter List
+            let filtered = state.transactions;
+            if (typeFilter !== 'all') filtered = filtered.filter(t => t.type === typeFilter);
+            if (catFilter !== 'all') filtered = filtered.filter(t => t.category === catFilter);
+
+            const listBody = document.getElementById('transaction-list-body');
+            if (filtered.length === 0) {
+                listBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-pastel-textMuted italic">No transactions found.</td></tr>`;
+            } else {
+                listBody.innerHTML = filtered.map(t => `
+                    <tr class="hover:bg-pastel-cream/50 transition-colors">
+                        <td class="py-3 px-2 font-medium text-pastel-text"RM{escapeHtml(t.desc)}</td>
+                        <td class="py-3 px-2"><span class="px-2 py-0.5 rounded-md bg-pastel-beige/80 text-[10px] text-pastel-text"RM{t.category}</span></td>
+                        <td class="py-3 px-2 text-pastel-textMuted"RM{t.date}</td>
+                        <td class="py-3 px-2 text-right font-semibold ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-500'}">
+                            ${t.type === 'income' ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}
+                        </td>
+                        <td class="py-3 px-2 text-center">
+                            <button onclick="deleteTransaction('${t.id}')" class="text-pastel-textMuted hover:text-rose-500 transition-colors">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            renderExpenseCategoryChart();
+        }
+
+        function renderExpenseCategoryChart() {
+            const ctx = document.getElementById('expenseCategoryChart').getContext('2d');
+            if (expenseCategoryChartInstance) expenseCategoryChartInstance.destroy();
+
+            const expenses = state.transactions.filter(t => t.type === 'expense');
+            const categories = {};
+
+            expenses.forEach(t => {
+                categories[t.category] = (categories[t.category] || 0) + parseFloat(t.amount);
+            });
+
+            const labels = Object.keys(categories);
+            const data = Object.values(categories);
+
+            expenseCategoryChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels.length > 0 ? labels : ['No Expenses'],
+                    datasets: [{
+                        data: data.length > 0 ? data : [1],
+                        backgroundColor: ['#E8C5C5', '#A3B899', '#F3D2A2', '#C2D6D6', '#D8929A', '#B8B5D6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function renderAssignments() {
+            const search = document.getElementById('assignment-search').value.toLowerCase();
+            const statusFilter = document.getElementById('assignment-status-filter').value;
+            const priorityFilter = document.getElementById('assignment-priority-filter').value;
+            const sortMode = document.getElementById('assignment-sort').value;
+
+            let filtered = state.assignments.filter(a => {
+                const matchSearch = a.title.toLowerCase().includes(search) || a.course.toLowerCase().includes(search);
+                const matchStatus = statusFilter === 'all' || a.status === statusFilter;
+                const matchPriority = priorityFilter === 'all' || a.priority === priorityFilter;
+                return matchSearch && matchStatus && matchPriority;
+            });
+
+            // Sorting
+            filtered.sort((a, b) => {
+                if (sortMode === 'dueDate') return new Date(a.dueDate) - new Date(b.dueDate);
+                if (sortMode === 'priority') {
+                    const map = { 'High': 1, 'Medium': 2, 'Low': 3 };
+                    return map[a.priority] - map[b.priority];
+                }
+                if (sortMode === 'course') return a.course.localeCompare(b.course);
+                return 0;
+            });
+
+            const container = document.getElementById('assignment-cards-container');
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-12 text-center text-pastel-textMuted italic">No assignments matching current criteria.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(a => `
+                <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative group">
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase bg-pastel-sage/50 text-emerald-800">
+                                ${escapeHtml(a.course)}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                                a.priority === 'High' ? 'bg-rose-100 text-rose-700' :
+                                a.priority === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                            }">
+                                ${a.priority}
+                            </span>
+                        </div>
+
+                        <h4 class="font-bold text-sm text-pastel-text mb-1 leading-snug"RM{escapeHtml(a.title)}</h4>
+                        <p class="text-xs text-pastel-textMuted mb-4">Due: <span class="font-medium text-pastel-text"RM{a.dueDate}</span> ${a.grade ? `• Grade Weight: ${escapeHtml(a.grade)}` : ''}</p>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center text-xs mb-1.5">
+                            <span class="text-pastel-textMuted text-[10px]">Progress</span>
+                            <span class="font-semibold text-pastel-accent"RM{a.progress}%</span>
+                        </div>
+                        <div class="w-full bg-pastel-beige rounded-full h-2 mb-4 overflow-hidden">
+                            <div class="bg-pastel-accent h-2 rounded-full transition-all duration-300" style="width: ${a.progress}%"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-3 border-t border-pastel-beige/50">
+                            <select onchange="updateAssignmentStatus('${a.id}', this.value)" class="text-xs bg-pastel-inputBg border border-pastel-beige rounded-lg px-2 py-1 text-pastel-text focus:outline-none">
+                                <option value="Not Started" ${a.status === 'Not Started' ? 'selected' : ''}>Not Started</option>
+                                <option value="In Progress" ${a.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Completed" ${a.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                            </select>
+
+                            <div class="flex items-center space-x-2">
+                                <button onclick="editAssignment('${a.id}')" class="p-1.5 text-pastel-textMuted hover:text-pastel-accent transition-colors">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="deleteAssignment('${a.id}')" class="p-1.5 text-pastel-textMuted hover:text-rose-500 transition-colors">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setTransactionType(type) {
+            currentTransType = type;
+            const btnExpense = document.getElementById('btn-type-expense');
+            const btnIncome = document.getElementById('btn-type-income');
+
+            if (type === 'expense') {
+                btnExpense.className = "py-2 rounded-xl font-semibold border transition-all bg-pastel-pink text-pastel-accent border-pastel-pinkDark";
+                btnIncome.className = "py-2 rounded-xl font-semibold border transition-all bg-pastel-inputBg text-pastel-textMuted border-pastel-beige";
+            } else {
+                btnIncome.className = "py-2 rounded-xl font-semibold border transition-all bg-pastel-sage text-emerald-800 border-pastel-sageDark";
+                btnExpense.className = "py-2 rounded-xl font-semibold border transition-all bg-pastel-inputBg text-pastel-textMuted border-pastel-beige";
+            }
+        }
+
+        function handleTransactionSubmit(e) {
+            e.preventDefault();
+            const desc = document.getElementById('trans-desc').value.trim();
+            const amount = parseFloat(document.getElementById('trans-amount').value);
+            const date = document.getElementById('trans-date').value;
+            const category = document.getElementById('trans-category').value;
+
+            if (!desc || isNaN(amount) || !date) return;
+
+            const newTransaction = {
+                id: Date.now().toString(),
+                type: currentTransType,
+                desc,
+                amount,
+                date,
+                category
+            };
+
+            state.transactions.unshift(newTransaction);
+            saveState();
+            closeModal('modal-transaction');
+            document.getElementById('form-transaction').reset();
+        }
+
+        function deleteTransaction(id) {
+            state.transactions = state.transactions.filter(t => t.id !== id);
+            saveState();
+        }
+
+        function handleAssignmentSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('assign-id').value;
+            const title = document.getElementById('assign-title').value.trim();
+            const course = document.getElementById('assign-course').value.trim();
+            const dueDate = document.getElementById('assign-date').value;
+            const priority = document.getElementById('assign-priority').value;
+            const status = document.getElementById('assign-status').value;
+            const grade = document.getElementById('assign-grade').value.trim();
+            let progress = parseInt(document.getElementById('assign-progress').value) || 0;
+
+            if (status === 'Completed') progress = 100;
+
+            if (id) {
+                // Edit
+                const index = state.assignments.findIndex(a => a.id === id);
+                if (index !== -1) {
+                    state.assignments[index] = { id, title, course, dueDate, priority, status, grade, progress };
+                }
+            } else {
+                // New
+                const newAssign = {
+                    id: Date.now().toString(),
+                    title, course, dueDate, priority, status, grade, progress
+                };
+                state.assignments.push(newAssign);
+            }
+
+            saveState();
+            closeModal('modal-assignment');
+            document.getElementById('form-assignment').reset();
+            document.getElementById('assign-id').value = '';
+        }
+
+        function editAssignment(id) {
+            const item = state.assignments.find(a => a.id === id);
+            if (!item) return;
+
+            document.getElementById('assign-id').value = item.id;
+            document.getElementById('assign-title').value = item.title;
+            document.getElementById('assign-course').value = item.course;
+            document.getElementById('assign-date').value = item.dueDate;
+            document.getElementById('assign-priority').value = item.priority;
+            document.getElementById('assign-status').value = item.status;
+            document.getElementById('assign-grade').value = item.grade || '';
+            document.getElementById('assign-progress').value = item.progress;
+
+            document.getElementById('assignment-modal-title').innerText = 'Edit Assignment';
+            openModal('modal-assignment');
+        }
+
+        function updateAssignmentStatus(id, newStatus) {
+            const item = state.assignments.find(a => a.id === id);
+            if (item) {
+                item.status = newStatus;
+                if (newStatus === 'Completed') item.progress = 100;
+                else if (newStatus === 'Not Started') item.progress = 0;
+                saveState();
+            }
+        }
+
+        function deleteAssignment(id) {
+            state.assignments = state.assignments.filter(a => a.id !== id);
+            saveState();
+        }
+
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            saveState();
+        }
+
+        function openModal(id) {
+            if (id === 'modal-assignment' && !document.getElementById('assign-id').value) {
+                document.getElementById('assignment-modal-title').innerText = 'Add Assignment';
+                document.getElementById('form-assignment').reset();
+            }
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `student_hub_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+
+        function importData(event) {
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.transactions && parsed.assignments) {
+                        state = parsed;
+                        saveState();
+                    }
+                } catch(err) {
+                    // Fail silently or handle error safely
+                }
+            };
+            if(event.target.files[0]) {
+                fileReader.readAsText(event.target.files[0]);
+            }
+        }
+
+        function confirmResetData() {
+            state = {
+                transactions: [],
+                assignments: [],
+                darkMode: false
+            };
+            saveState();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
 </body>
 </html>
