@@ -202,7 +202,7 @@
                     </div>
                     <div>
                         <p class="text-xs text-pastel-textMuted font-medium">Net Balance</p>
-                        <h3 id="dash-balance" class="text-xl font-bold text-pastel-text mt-0.5">$0.00</h3>
+                        <h3 id="dash-balance" class="text-xl font-bold text-pastel-text mt-0.5">RM0.00</h3>
                     </div>
                 </div>
 
@@ -212,7 +212,7 @@
                     </div>
                     <div>
                         <p class="text-xs text-pastel-textMuted font-medium">Total Spent</p>
-                        <h3 id="dash-expenses" class="text-xl font-bold text-pastel-text mt-0.5">$0.00</h3>
+                        <h3 id="dash-expenses" class="text-xl font-bold text-pastel-text mt-0.5">RM0.00</h3>
                     </div>
                 </div>
 
@@ -280,15 +280,15 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm">
                     <p class="text-xs text-pastel-textMuted font-medium">Total Income</p>
-                    <p id="money-total-income" class="text-2xl font-bold text-emerald-600 mt-1">$0.00</p>
+                    <p id="money-total-income" class="text-2xl font-bold text-emerald-600 mt-1">RM0.00</p>
                 </div>
                 <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm">
                     <p class="text-xs text-pastel-textMuted font-medium">Total Expenses</p>
-                    <p id="money-total-expenses" class="text-2xl font-bold text-rose-500 mt-1">$0.00</p>
+                    <p id="money-total-expenses" class="text-2xl font-bold text-rose-500 mt-1">RM0.00</p>
                 </div>
                 <div class="bg-pastel-cardBg p-5 rounded-2xl border border-pastel-beige/80 shadow-sm">
                     <p class="text-xs text-pastel-textMuted font-medium">Remaining Funds</p>
-                    <p id="money-remaining-balance" class="text-2xl font-bold text-pastel-text mt-1">$0.00</p>
+                    <p id="money-remaining-balance" class="text-2xl font-bold text-pastel-text mt-1">RM0.00</p>
                 </div>
             </div>
 
@@ -409,7 +409,7 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block mb-1 text-pastel-text font-medium">Amount ($)</label>
+                        <label class="block mb-1 text-pastel-text font-medium">Amount (RM)</label>
                         <input type="number" step="0.01" min="0.01" id="trans-amount" required placeholder="0.00" class="w-full p-2.5 rounded-xl bg-pastel-inputBg border border-pastel-beige text-pastel-text focus:outline-none">
                     </div>
                     <div>
@@ -637,8 +637,8 @@
             const totalExpense = state.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0);
             const balance = totalIncome - totalExpense;
 
-            document.getElementById('dash-balance').innerText = `$${balance.toFixed(2)}`;
-            document.getElementById('dash-expenses').innerText = `$${totalExpense.toFixed(2)}`;
+            document.getElementById('dash-balance').innerText = `RM${balance.toFixed(2)}`;
+            document.getElementById('dash-expenses').innerText = `RM${totalExpense.toFixed(2)}`;
 
             // Assignment calculations
             const pending = state.assignments.filter(a => a.status !== 'Completed').length;
@@ -662,7 +662,7 @@
                 upcomingContainer.innerHTML = pendingList.map(item => `
                     <div class="p-3 bg-pastel-cream rounded-xl border border-pastel-beige flex items-center justify-between">
                         <div class="flex items-center space-x-3">
-                            <div class="w-2 h-2 rounded-full ${item.priority === 'High' ? 'bg-rose-400' : item.priority === 'Medium' ? 'bg-amber-400' : 'bg-emerald-400'}"></div>
+                            <div class="w-2 h-2 rounded-full RM{item.priority === 'High' ? 'bg-rose-400' : item.priority === 'Medium' ? 'bg-amber-400' : 'bg-emerald-400'}"></div>
                             <div>
                                 <h4 class="font-semibold text-xs text-pastel-text">${escapeHtml(item.title)}</h4>
                                 <span class="text-[10px] text-pastel-textMuted">${escapeHtml(item.course)} • Due ${item.dueDate}</span>
@@ -740,9 +740,9 @@
             const totalIncome = state.transactions.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
             const totalExpense = state.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0);
 
-            document.getElementById('money-total-income').innerText = `$${totalIncome.toFixed(2)}`;
-            document.getElementById('money-total-expenses').innerText = `$${totalExpense.toFixed(2)}`;
-            document.getElementById('money-remaining-balance').innerText = `$${(totalIncome - totalExpense).toFixed(2)}`;
+            document.getElementById('money-total-income').innerText = `RM${totalIncome.toFixed(2)}`;
+            document.getElementById('money-total-expenses').innerText = `RM${totalExpense.toFixed(2)}`;
+            document.getElementById('money-remaining-balance').innerText = `RM${(totalIncome - totalExpense).toFixed(2)}`;
 
             // Filter List
             let filtered = state.transactions;
@@ -759,7 +759,7 @@
                         <td class="py-3 px-2"><span class="px-2 py-0.5 rounded-md bg-pastel-beige/80 text-[10px] text-pastel-text">${t.category}</span></td>
                         <td class="py-3 px-2 text-pastel-textMuted">${t.date}</td>
                         <td class="py-3 px-2 text-right font-semibold ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-500'}">
-                            ${t.type === 'income' ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}
+                            ${t.type === 'income' ? '+' : '-'}RM${parseFloat(t.amount).toFixed(2)}
                         </td>
                         <td class="py-3 px-2 text-center">
                             <button onclick="deleteTransaction('${t.id}')" class="text-pastel-textMuted hover:text-rose-500 transition-colors">
